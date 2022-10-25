@@ -84,6 +84,7 @@ public class SBinTre<T> {
     }
 
     public boolean leggInn(T verdi) {
+        // fra kompendie med endringer for riktig forelder node.
 
         Objects.requireNonNull(verdi, "Ulovlig med nullverdier!");
 
@@ -93,7 +94,7 @@ public class SBinTre<T> {
         while (p != null)       // fortsetter til p er ute av treet
         {
             q = p;                                 // q er forelder til p
-            cmp = comp.compare(verdi,p.verdi);     // bruker komparatoren
+            cmp = comp.compare(verdi, p.verdi);     // bruker komparatoren
             p = cmp < 0 ? p.venstre : p.høyre;     // flytter p
         }
 
@@ -124,24 +125,24 @@ public class SBinTre<T> {
         // finnet antall verdier i treet.
 
         // verdi == null  return 0
-        if (verdi == null){
+        if (verdi == null) {
             return 0;
         }
-         // instans av antallet = 0
-       int antallet = 0;
+        // instans av antallet = 0
+        int antallet = 0;
 
         Node<T> rotnode = rot;
         int cmp;
 
         // Traversere Nodene
-        while(rotnode != null)  {
-              cmp = comp.compare(verdi, rotnode.verdi);
-            if (cmp < 0){  // mindre så går den mot venstre
+        while (rotnode != null) {
+            cmp = comp.compare(verdi, rotnode.verdi);
+            if (cmp < 0) {  // mindre så går den mot venstre
                 rotnode = rotnode.venstre;
-            }else {
-                if (verdi == rotnode.verdi){
+            } else {
+                if (verdi == rotnode.verdi) {
                     antallet++;    // funnet noden og inkrementerer
-            }
+                }
                 rotnode = rotnode.høyre;
             }
 
@@ -158,29 +159,55 @@ public class SBinTre<T> {
         // instansierer rotnoden
         Node<T> rot = p;
 
-        while(true){
-            if (p == rot){
-                return null;
-            }
-            if (rot.venstre != null){
+
+        // loop basert på kompendie 5.1.7
+        while (true) {
+            if (rot.venstre != null) {
                 rot = rot.venstre;
-            }
-            else if (rot.høyre != null){
+            } else if (rot.høyre != null) {
                 rot = rot.høyre;
-            }
-            else return rot;
+            } else return rot;
         }
 
         //skal returnere første node postorden med p som rot.
     }
 
     private static <T> Node<T> nestePostorden(Node<T> p) {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        //NestePostorden går slik:
+        //
+        Node<T> foreldre = p.forelder;
+
+        //Hvis p ikke har en forelder ( p er rotnoden), så er p den siste i postorden.
+        if (foreldre == null) {
+            return null;
+        }
+        //Hvis p er høyre barn til sin forelder f, er forelderen f den neste.
+        if (p == foreldre.høyre) {
+            return foreldre;
+        }
+
+        //Hvis p er venstre barn til sin forelder f, gjelder:
+        //        - Hvis p er enebarn (f.høyre er null), er forelderen f den neste.
+        //        - Hvis p ikke er enebarn (dvs. f.høyre er ikke null), så er den neste den noden som kommer først i postorden i subtreet med f.høyre som rot.
+        if(p == foreldre.venstre){
+            if(foreldre.høyre == null){
+                return foreldre;
+            }
+        }
+        return førstePostorden(foreldre.høyre);
+
 
     }
 
     public void postorden(Oppgave<? super T> oppgave) {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+        Node<T> p = førstePostorden(rot); //tilordner første postorden
+        oppgave.utførOppgave(p.verdi); //skriver ut
+        while(true){ //går i while løkke helt til neste postorden node er null.
+            p = nestePostorden(p);
+            if(p == null)break;
+            oppgave.utførOppgave(p.verdi);
+
+        }
     }
 
     public void postordenRecursive(Oppgave<? super T> oppgave) {
@@ -188,7 +215,18 @@ public class SBinTre<T> {
     }
 
     private void postordenRecursive(Node<T> p, Oppgave<? super T> oppgave) {
-        throw new UnsupportedOperationException("Ikke kodet ennå!");
+         // siden det er et rekkursivt funksjon trenger vi et basistilfelle
+
+        if (p == null){
+            return;
+        }
+        // kalle seg selv.
+        postordenRecursive(p.venstre, oppgave);
+        postordenRecursive(p.høyre, oppgave);
+
+        //utføreoppgave
+        oppgave.utførOppgave(p.verdi);
+
     }
 
     public ArrayList<T> serialize() {
@@ -200,9 +238,11 @@ public class SBinTre<T> {
     }
 
     public static void main(String[] args) {
-        Integer[] a = {4,7,2,9,4,10,8,7,4,6};
+        Integer[] a = {4, 7, 2, 9, 4, 10, 8, 7, 4, 6};
         SBinTre<Integer> tre = new SBinTre<>(Comparator.naturalOrder());
-        for (int verdi : a) { tre.leggInn(verdi); }
+        for (int verdi : a) {
+            tre.leggInn(verdi);
+        }
 
         System.out.println(tre.antall());      // Utskrift: 10
         System.out.println(tre.antall(5));     // Utskrift: 0
