@@ -200,14 +200,21 @@ public class SBinTre<T> {
     }
 
     public void postorden(Oppgave<? super T> oppgave) {
-        Node<T> p = førstePostorden(rot); //tilordner første postorden
-        oppgave.utførOppgave(p.verdi); //skriver ut
-        while(true){ //går i while løkke helt til neste postorden node er null.
-            p = nestePostorden(p);
-            if(p == null)break;
-            oppgave.utførOppgave(p.verdi);
-
+        //Start med å finne den første noden p i postorden
+        Node<T> node = førstePostorden(rot);
+        oppgave.utførOppgave(node.verdi);
+        //Deretter vil (f.eks. i en while-løkke) setningen: p = nestePostorden(p); gi den neste. Osv. til p blir null
+        while (true){
+            node = nestePostorden(node);
+            //til p er null
+            if (node == null){
+                break;
+            }
+            //utføreoppgave
+            oppgave.utførOppgave(node.verdi); // hvis noden ikke er null, skriver
+            // den ut oppgaven altså verdiene i nodene,.
         }
+
     }
 
     public void postordenRecursive(Oppgave<? super T> oppgave) {
